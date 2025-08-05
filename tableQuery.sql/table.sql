@@ -8,7 +8,7 @@
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL,
   first_name VARCHAR(100) NOT NULL,
   last_name VARCHAR(100) NOT NULL,
-  gender VARCHAR(10) NOT NULL CHECK (gender IN ('Male', 'Female', 'Other')),
+  gender TEXT NOT NULL,
   age INT NOT NULL,
   address TEXT NOT NULL,
   city TEXT NOT NULL,
@@ -22,15 +22,17 @@
 CREATE TABLE IF NOT EXISTS roles (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL,
+  created_by UUID NOT NULL REFERENCES super_admins(id),
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL,
-  roles TEXT NOT NULL  -- admin , users ,driver 
+  roles TEXT NOT NULL  -- admin , users ,driver
   );
 
 CREATE TABLE IF NOT EXISTS user_roles_maps (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL,
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL,
-  roles TEXT NOT NULL REFERENCES roles(id) 
+  created_by UUDID NOT NULL,
+  role_id UUID NOT NULL REFERENCES roles(id) 
   );
 
 
@@ -67,14 +69,17 @@ CREATE TABLE IF NOT EXISTS users (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL,
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL,
-  admin_id NOT NUll REFERENCES admins(id),
-  store_id NOT NULL REFERENCES stores(id)
+  created_by UUDID NOT NULL REFERENCES super_admins(id),
+  user_id UUID NOT NUll REFERENCES users(id),
+  store_id UUID NOT NULL REFERENCES stores(id),
+  UNIQUE (user_id,store_id)
 );
 
  CREATE TABLE IF NOT EXISTS categories (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL,
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL,
+  created_by UUID NOT NULL REFERENCES super_admins(id),
   title TEXT NOT NULL
 );
 
@@ -82,6 +87,7 @@ CREATE TABLE IF NOT EXISTS sub_categories (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL,
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL,
+  created_by UUID NOT NULL REFERENCES super_admins(id),
   title TEXT NOT NULL
 );
 
@@ -89,6 +95,7 @@ CREATE TABLE IF NOT EXISTS products (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL,
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL,
+  created_by UUID NOT NULL,
   title TEXT NOT NULL,
   description TEXT
 );
@@ -97,7 +104,7 @@ CREATE TABLE IF NOT EXISTS product_uploads (
     id uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
     created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT current_timestamp,
     updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT current_timestamp,
-    created_by uuid NOT NULL REFERENCES users (id) ON DELETE CASCADE,
+    created_by uuid NOT NULL,
     team_id uuid REFERENCES teams (id) ON DELETE CASCADE,
     name TEXT NOT NULL,
     url TEXT NOT NULL,
@@ -106,5 +113,18 @@ CREATE TABLE IF NOT EXISTS product_uploads (
     storage_path TEXT NOT NULL,
     UNIQUE (event_id, created_by)
 );
+
+CREATE TABLE IF NOT EXISTS product_categories_maps (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL,
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL,
+  created_by NOT NULL ,
+  categories_id NOT NULL REFERENCES categories(id),
+  sub_categories_id NOT NULL REFERENCES sub_categories(id),
+  product_id NOT NULL REFERENCES products(id),
+  role_id UUID NOT NULL REFERENCES roles(id)
+  UNIQUE (categories_id,sub_categories_id,product_id) 
+  );
+
 
 
