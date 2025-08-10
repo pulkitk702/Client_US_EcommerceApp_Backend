@@ -24,7 +24,7 @@ CREATE TABLE IF NOT EXISTS roles (
   created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL,
   created_by UUID NOT NULL REFERENCES super_admins(id),
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL,
-  roles TEXT NOT NULL  -- admin , users ,driver
+  roles TEXT NOT NULL  -- admin , users ,driver,manager
   );
 
 CREATE TABLE IF NOT EXISTS user_roles_maps (
